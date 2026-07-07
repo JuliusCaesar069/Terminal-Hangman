@@ -58,7 +58,7 @@ void game(char phrase[],int index,int win_condition){
         scanf(" %c",&input);
         guesses[guesses_taken] = input;
 
-        printf("%zu \n",sizeof(input));
+        // printf("%zu \n",sizeof(input));
 
         if(sizeof(input) >1){
             printf("Error! Please enter a single character");
