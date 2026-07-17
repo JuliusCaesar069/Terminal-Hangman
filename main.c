@@ -4,8 +4,11 @@
 #include <time.h>
 #include <stdbool.h>
 
-#define MAX_WORDS 1000
+#define MAX_WORDS 1000  
 #define MAX_LEN 50
+char ans;
+int word_count ;
+int max_wrong;
 
 char words[MAX_WORDS][MAX_LEN];
 
@@ -19,6 +22,25 @@ bool win_check(int correct , int  req){
 }
 
 
+void precompute_words(char * filename){
+        FILE *fp = fopen(filename, "r");
+
+    if (fp == NULL) {
+        printf("Error finding the file\n");
+        return ;
+    }
+
+    for (int i = 0; i < MAX_WORDS; i++) {
+        if (fgets(words[i], MAX_LEN, fp) == NULL) {
+            break;
+        }
+
+        words[i][strcspn(words[i], "\n")] = '\0';
+        word_count++;
+    }
+
+    fclose(fp);
+}
 
 
 bool duplicate_guess(char guesses[],char guess,int guesses_taken){
@@ -45,6 +67,8 @@ void reveal(char phrase[],int i,char guess){
     phrase[i] = guess;
 }
 
+
+
 void game(char phrase[],int index,int win_condition){
     char guesses[50];
     int guesses_taken =0;
@@ -52,18 +76,13 @@ void game(char phrase[],int index,int win_condition){
     int wrong_guesses = 0;
     int correct_guesses = 0;
 
-    while(wrong_guesses <6){
+    while(wrong_guesses <max_wrong){
         char input;
         printf("Take your guess \n");
         scanf(" %c",&input);
         guesses[guesses_taken] = input;
 
         // printf("%zu \n",sizeof(input));
-
-        if(sizeof(input) >1){
-            printf("Error! Please enter a single character");
-            continue;
-        }
 
         if(!duplicate_guess(guesses,input,guesses_taken)){
         guesses_taken++;
@@ -81,7 +100,7 @@ void game(char phrase[],int index,int win_condition){
         if(!found){
             printf("Your guess is not present in the word \n");
             wrong_guesses++;
-            printf("Lives left : %d \n",6-wrong_guesses);
+            printf("Lives left : %d \n",max_wrong-wrong_guesses);
             if(wrong_guesses == 6){
                 printf("Sorry, you lost!\n");
                 printf("The word was: %s\n", words[index]);
@@ -114,25 +133,32 @@ int main(void)
 {
     srand(time(NULL));
 
-    FILE *fp = fopen("words.txt", "r");
-    int word_count = 0;
+    do{
 
-    if (fp == NULL) {
-        printf("Error finding the file\n");
-        return 0;
+            int difficulty ;
+    char  filename[MAX_LEN];
+    printf("PLEASE CHOOSE DIFFICULTY ! \n Enter \n 1 for easy \n 2 for medium \n 3 for hard \n");
+    scanf("%d",&difficulty);
+
+    switch (difficulty){
+        case 1:
+        strcpy(filename,"easy.txt");
+        max_wrong = 7;
+        break;
+
+        case 2 :
+        strcpy(filename,"medium.txt");
+        max_wrong = 6;
+        break;
+
+        case 3 :
+        strcpy(filename,"hard.txt");
+        max_wrong = 5;
+        break;
     }
 
-    for (int i = 0; i < MAX_WORDS; i++) {
-        if (fgets(words[i], MAX_LEN, fp) == NULL) {
-            break;
-        }
-
-        words[i][strcspn(words[i], "\n")] = '\0';
-        word_count++;
-    }
-
-    fclose(fp);
-
+    word_count = 0;
+    precompute_words(filename);
     int index = getIndex(word_count);
     
     // printf("%s \n",words[index]);
@@ -169,5 +195,11 @@ int main(void)
 
     game(phrase,index,win_condition);
 
+    
+    printf("Play again ? (y/n) \n");
+    scanf(" %c" , &ans);
+}while(ans == 'y');
+    if(ans == 'n'){
     return 0;
+    }
 }
